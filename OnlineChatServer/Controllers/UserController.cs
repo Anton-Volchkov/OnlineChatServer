@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -33,6 +35,25 @@ namespace OnlineChatServer.Controllers
             _logger = logger;
             _appSettings = appSettings.Value;
             _roleManager = roleManager;
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("GetUserInfo/{userID}")]
+        public async Task<object> GetUserInfo(string userID)
+        {
+
+            var user = await _userManager.FindByIdAsync(userID);
+
+            return new
+            {
+                UserID = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                Login = user.UserName,
+                DateRegister = user.RegisterDate
+            };
         }
 
 
