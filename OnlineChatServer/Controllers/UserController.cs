@@ -23,14 +23,16 @@ namespace OnlineChatServer.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationSettings _appSettings;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public UserController(ILogger<UserController> logger, UserManager<ApplicationUser> userManager,
-                              SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings)
+                              SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _appSettings = appSettings.Value;
+            _roleManager = roleManager;
         }
 
 
@@ -41,9 +43,17 @@ namespace OnlineChatServer.Controllers
             model.Role = "User";
             try
             {
+                const string roleName = "User";
                 var user = new ApplicationUser(model.Login, model.FirstName, model.LastName, model.Email);
                 var result = await _userManager.CreateAsync(user, model.Password);
-                await _userManager.AddToRoleAsync(user, model.Role);
+                if (!await _roleManager.RoleExistsAsync(roleName))
+                {
+                    var role = new IdentityRole(roleName);
+                    await _roleManager.CreateAsync(role);
+                }
+
+
+                await _userManager.AddToRoleAsync(user, roleName);
                 return Ok(result);
             }
             catch(Exception e)
