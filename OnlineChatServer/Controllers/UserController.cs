@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -21,13 +19,13 @@ namespace OnlineChatServer.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
-       
         private readonly ILogger<UserController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationSettings _appSettings;
 
-        public UserController(ILogger<UserController> logger, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings)
+        public UserController(ILogger<UserController> logger, UserManager<ApplicationUser> userManager,
+                              SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -43,7 +41,7 @@ namespace OnlineChatServer.Controllers
             model.Role = "User";
             try
             {
-                var user = new ApplicationUser(model.Login,model.FirstName,model.LastName,model.Email);
+                var user = new ApplicationUser(model.Login, model.FirstName, model.LastName, model.Email);
                 var result = await _userManager.CreateAsync(user, model.Password);
                 await _userManager.AddToRoleAsync(user, model.Role);
                 return Ok(result);
@@ -55,35 +53,21 @@ namespace OnlineChatServer.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("123")]
-        [Authorize(Roles = "User")]
-        public string Test()
-        {
-            return "1234";
-        }
 
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login(LoginModel model)
         {
-
             try
             {
                 var user = await _userManager.FindByNameAsync(model.Login);
 
                 if(user != null && await _userManager.CheckPasswordAsync(user, model.Password))
                 {
-                    var role = await _userManager.GetRolesAsync(user);
-                    IdentityOptions options = new IdentityOptions();
+                    var claims = await GetUserRolesClaims(user);
                     var tokenDescriptor = new SecurityTokenDescriptor
                     {
-                        Subject = new ClaimsIdentity(new Claim[]
-                        {
-                            new Claim("UserID", user.Id),
-                            new Claim(options.ClaimsIdentity.RoleClaimType,role.FirstOrDefault()), 
-                           
-                        }),
+                        Subject = new ClaimsIdentity(claims),
                         Expires = DateTime.Now.AddHours(4),
                         SigningCredentials =
                             new
@@ -94,16 +78,29 @@ namespace OnlineChatServer.Controllers
                     var tokenHandler = new JwtSecurityTokenHandler();
                     var securityToken = tokenHandler.CreateToken(tokenDescriptor);
                     var token = tokenHandler.WriteToken(securityToken);
-                    return Ok(new {token});
+                    return Ok(new { token });
                 }
-                else
-                    return BadRequest(new {message = "Incorrect user or password"});
-            }
-            catch (Exception e)
-            {
 
-                return BadRequest(new {message = "Incorrect Data"});
+                return BadRequest(new { message = "Incorrect user or password" });
             }
+            catch(Exception e)
+            {
+                return BadRequest(new { message = "Incorrect Data" });
+            }
+        }
+
+        private async Task<List<Claim>> GetUserRolesClaims(ApplicationUser user)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            var options = new IdentityOptions();
+
+            var claims = new List<Claim>();
+
+            claims.Add(new Claim("UserID", user.Id));
+
+            foreach(var role in roles) claims.Add(new Claim(options.ClaimsIdentity.RoleClaimType, role));
+
+            return claims;
         }
     }
 }
