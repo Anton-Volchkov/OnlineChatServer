@@ -12,20 +12,17 @@ using OnlineChatServer.Domain.Models;
 
 namespace OnlineChatServer.Application.Users.Commands.RegisterUser
 {
-    public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, object>
+    public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, IdentityResult>
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public RegisterUserHandler(UserManager<ApplicationUser> userManager,
-                              SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager)
+        public RegisterUserHandler(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
             _roleManager = roleManager;
         }
-        public async Task<object> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+        public async Task<IdentityResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
         {
           
             try
