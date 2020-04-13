@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -16,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using OnlineChatServer.Application.Users.Commands.RegisterUser;
 using OnlineChatServer.DataAccess;
 using OnlineChatServer.Domain;
 using OnlineChatServer.Models;
@@ -55,6 +58,8 @@ namespace OnlineChatServer
 
             services.AddDbContext<ApplicationDbContext>(options =>
                                                             options.UseNpgsql(connectionString));
+
+            services.AddMediatR(typeof(RegisterUserCommand).GetTypeInfo().Assembly);
 
             services.AddIdentity<ApplicationUser,IdentityRole>(options =>
                     {

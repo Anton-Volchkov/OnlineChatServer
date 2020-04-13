@@ -5,12 +5,15 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OnlineChatServer.Application.Users.Commands.RegisterUser;
+using OnlineChatServer.Application.Users.Queries.Login;
 using OnlineChatServer.Domain;
 using OnlineChatServer.Domain.Models;
 using OnlineChatServer.Models;
@@ -26,15 +29,17 @@ namespace OnlineChatServer.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationSettings _appSettings;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IMediator _mediator;
 
         public UserController(ILogger<UserController> logger, UserManager<ApplicationUser> userManager,
-                              SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings, RoleManager<IdentityRole> roleManager)
+                              SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings, RoleManager<IdentityRole> roleManager, IMediator mediator)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _appSettings = appSettings.Value;
             _roleManager = roleManager;
+            _mediator = mediator;
         }
 
         [HttpGet]
@@ -61,27 +66,12 @@ namespace OnlineChatServer.Controllers
         [Route("Register")]
         public async Task<IActionResult> RegisterUser(ApplicationUserModel model)
         {
-            model.Role = "User";
-            try
+            var result = await _mediator.Send(new RegisterUserCommand()
             {
-                const string roleName = "User";
-                var user = new ApplicationUser(model.Login, model.FirstName, model.LastName, model.Email);
-                var result = await _userManager.CreateAsync(user, model.Password);
-                if (!await _roleManager.RoleExistsAsync(roleName))
-                {
-                    var role = new IdentityRole(roleName);
-                    await _roleManager.CreateAsync(role);
-                }
+                User = model
+            });
 
-
-                await _userManager.AddToRoleAsync(user, roleName);
-                return Ok(result);
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+            return Ok(result);
         }
 
 
@@ -89,49 +79,20 @@ namespace OnlineChatServer.Controllers
         [Route("Login")]
         public async Task<IActionResult> Login(LoginModel model)
         {
-            try
+            var token = await _mediator.Send(new LoginCommand()
             {
-                var user = await _userManager.FindByNameAsync(model.Login);
+                Model = model,
+                JWTSecretKey = _appSettings.SecretJWTKey
+            });
 
-                if(user != null && await _userManager.CheckPasswordAsync(user, model.Password))
-                {
-                    var claims = await GetUserRolesClaims(user);
-                    var tokenDescriptor = new SecurityTokenDescriptor
-                    {
-                        Subject = new ClaimsIdentity(claims),
-                        Expires = DateTime.Now.AddHours(4),
-                        SigningCredentials =
-                            new
-                                SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appSettings.SecretJWTKey)),
-                                                   SecurityAlgorithms.HmacSha256Signature)
-                    };
-
-                    var tokenHandler = new JwtSecurityTokenHandler();
-                    var securityToken = tokenHandler.CreateToken(tokenDescriptor);
-                    var token = tokenHandler.WriteToken(securityToken);
-                    return Ok(new { token });
-                }
-
-                return BadRequest(new { message = "Incorrect user or password" });
-            }
-            catch(Exception e)
+            if(string.IsNullOrWhiteSpace(token))
             {
-                return BadRequest(new { message = "Incorrect Data" });
+                return BadRequest("Error Login");
             }
+
+            return Ok(new {token});
         }
 
-        private async Task<List<Claim>> GetUserRolesClaims(ApplicationUser user)
-        {
-            var roles = await _userManager.GetRolesAsync(user);
-            var options = new IdentityOptions();
-
-            var claims = new List<Claim>();
-
-            claims.Add(new Claim("UserID", user.Id));
-
-            foreach(var role in roles) claims.Add(new Claim(options.ClaimsIdentity.RoleClaimType, role));
-
-            return claims;
-        }
+      
     }
 }
