@@ -53,7 +53,7 @@ namespace OnlineChatServer.Hubs.ChatHub
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             var userID = (Context.User.Claims.First(x => x.Type == "UserID").Value);
-            _service.RemoveUser(userID);
+            _service.Disconnect(userID, Context.ConnectionId);
             await Clients.All.SendAsync("OnlineUsers", _service.GetOnlineUsers());
         }
     }

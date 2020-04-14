@@ -21,9 +21,9 @@ namespace OnlineChatServer.Hubs.ChatHub.Services
             });
         }
 
-        public void RemoveUser(string userID)
+        public void Disconnect(string userID, string connectionID)
         {
-            var user = Users.FirstOrDefault(x => x.UserID == userID);
+            var user = Users.FirstOrDefault(x => x.UserID == userID && x.ConnectionID == connectionID);
             if(user != null)
             {
                 Users.Remove(user);
