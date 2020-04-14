@@ -13,9 +13,7 @@ namespace OnlineChatServer.Domain
 
         public string RegisterDate { get; set; }
 
-        public byte[] ImageBytes { get; set; } = new byte[0];
-
-        public string ImageName { get; set; } = "NoPhoto.png";
+        public string ImagePath { get; set; }
 
         public string AboutAs { get; set; }
 
@@ -26,12 +24,13 @@ namespace OnlineChatServer.Domain
         }
 
 
-        public ApplicationUser(string login, string firstName, string lastName,string email) : this()
+        public ApplicationUser(string login, string firstName, string lastName,string email, string imagePath) : this()
         {
             SetUserName(login);
             SetFirstName(firstName);
             SetLastName(lastName);
             SetEmail(email);
+            SetImagePath(imagePath);
         }
 
         public void SetAboutAs(string info)
@@ -103,6 +102,16 @@ namespace OnlineChatServer.Domain
             }
 
             Address = address;
+        }
+
+        public void SetImagePath(string imagePath)
+        {
+            if (string.IsNullOrWhiteSpace(imagePath))
+            {
+                throw new ArgumentException("ImagePath is empty", nameof(imagePath));
+            }
+
+            ImagePath = imagePath;
         }
     }
 }

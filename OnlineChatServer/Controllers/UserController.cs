@@ -47,17 +47,19 @@ namespace OnlineChatServer.Controllers
         [Route("GetUserInfo/{userID}")]
         public async Task<object> GetUserInfo(string userID)
         {
-
             var user = await _userManager.FindByIdAsync(userID);
-
+            var roles = await _userManager.GetRolesAsync(user);
             return new
             {
                 UserID = user.Id,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
+                FullName = $"{user.FirstName} {user.LastName}",
                 Email = user.Email,
                 Login = user.UserName,
-                DateRegister = user.RegisterDate
+                ImagePath= user.ImagePath,
+                DateRegister = user.RegisterDate,
+                Roles = roles
             };
         }
 

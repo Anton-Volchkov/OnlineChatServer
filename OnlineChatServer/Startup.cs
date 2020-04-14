@@ -17,10 +17,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using OnlineChatServer.Application.Users.Commands.RegisterUser;
 using OnlineChatServer.DataAccess;
 using OnlineChatServer.Domain;
+using OnlineChatServer.Hubs.ChatHub;
+using OnlineChatServer.Hubs.ChatHub.Services;
 using OnlineChatServer.Models;
 
 namespace OnlineChatServer
@@ -73,6 +76,9 @@ namespace OnlineChatServer
                     })
                     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+            services.AddSingleton<ChatService>();
+            services.AddSignalR();
+
             services.AddCors(options =>
             {
                 options.AddPolicy("CorsPolicy",
@@ -98,6 +104,25 @@ namespace OnlineChatServer
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ClockSkew = TimeSpan.Zero
+                };
+                x.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        if ((context.Request.Path.Value.StartsWith("/chat"))
+                            && context.Request.Query.TryGetValue("access_token", out StringValues token)
+                        )
+                        {
+                            context.Token = token;
+                        }
+
+                        return Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        var te = context.Exception;
+                        return Task.CompletedTask;
+                    }
                 };
             });
 
@@ -126,6 +151,7 @@ namespace OnlineChatServer
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<ChatHub>("/chat");
             });
         }
     }

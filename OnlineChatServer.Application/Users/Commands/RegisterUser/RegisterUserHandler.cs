@@ -28,7 +28,7 @@ namespace OnlineChatServer.Application.Users.Commands.RegisterUser
             try
             {
                 const string roleName = "User";
-                var user = new ApplicationUser(request.User.Login, request.User.FirstName, request.User.LastName, request.User.Email);
+                var user = new ApplicationUser(request.User.Login, request.User.FirstName, request.User.LastName, request.User.Email,request.User.ImagePath);
                 var result = await _userManager.CreateAsync(user, request.User.Password);
                 if (!await _roleManager.RoleExistsAsync(roleName))
                 {
