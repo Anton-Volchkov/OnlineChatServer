@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using MediatR;
+﻿using MediatR;
 using OnlineChatServer.Domain.Models;
 
 namespace OnlineChatServer.Application.Users.Queries.Login

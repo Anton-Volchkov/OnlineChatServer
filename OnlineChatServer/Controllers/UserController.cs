@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using OnlineChatServer.Application.Users.Commands.RegisterUser;
 using OnlineChatServer.Application.Users.Queries.Login;
 using OnlineChatServer.Domain;
@@ -24,15 +17,16 @@ namespace OnlineChatServer.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly ILogger<UserController> _logger;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApplicationSettings _appSettings;
-        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly ILogger<UserController> _logger;
         private readonly IMediator _mediator;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public UserController(ILogger<UserController> logger, UserManager<ApplicationUser> userManager,
-                              SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings, RoleManager<IdentityRole> roleManager, IMediator mediator)
+            SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings,
+            RoleManager<IdentityRole> roleManager, IMediator mediator)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -52,12 +46,12 @@ namespace OnlineChatServer.Controllers
             return new
             {
                 UserID = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
+                user.FirstName,
+                user.LastName,
                 FullName = $"{user.FirstName} {user.LastName}",
-                Email = user.Email,
+                user.Email,
                 Login = user.UserName,
-                ImagePath= user.ImagePath,
+                user.ImagePath,
                 DateRegister = user.RegisterDate,
                 Roles = roles
             };
@@ -68,7 +62,7 @@ namespace OnlineChatServer.Controllers
         [Route("Register")]
         public async Task<IActionResult> RegisterUser(ApplicationUserModel model)
         {
-            var result = await _mediator.Send(new RegisterUserCommand()
+            var result = await _mediator.Send(new RegisterUserCommand
             {
                 User = model
             });
@@ -81,20 +75,15 @@ namespace OnlineChatServer.Controllers
         [Route("Login")]
         public async Task<IActionResult> Login(LoginModel model)
         {
-            var token = await _mediator.Send(new LoginCommand()
+            var token = await _mediator.Send(new LoginCommand
             {
                 Model = model,
                 JWTSecretKey = _appSettings.SecretJWTKey
             });
 
-            if(string.IsNullOrWhiteSpace(token))
-            {
-                return BadRequest("Error Login");
-            }
+            if (string.IsNullOrWhiteSpace(token)) return BadRequest("Error Login");
 
-            return Ok(new {token});
+            return Ok(new { token });
         }
-
-      
     }
 }

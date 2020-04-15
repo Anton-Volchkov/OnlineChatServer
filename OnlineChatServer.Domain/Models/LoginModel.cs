@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OnlineChatServer.Domain.Models
+﻿namespace OnlineChatServer.Domain.Models
 {
     public class LoginModel
     {

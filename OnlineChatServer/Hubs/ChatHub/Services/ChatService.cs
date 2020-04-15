@@ -10,7 +10,7 @@ namespace OnlineChatServer.Hubs.ChatHub.Services
     {
         private readonly List<ChatUser> Users = new List<ChatUser>();
 
-        public void Connect(string userID, string connectionID, string fullName,string imagePath)
+        public void Connect(string userID, string connectionID, string fullName, string imagePath)
         {
             Users.Add(new ChatUser
             {
@@ -24,10 +24,7 @@ namespace OnlineChatServer.Hubs.ChatHub.Services
         public void Disconnect(string userID, string connectionID)
         {
             var user = Users.FirstOrDefault(x => x.UserID == userID && x.ConnectionID == connectionID);
-            if(user != null)
-            {
-                Users.Remove(user);
-            }
+            if (user != null) Users.Remove(user);
         }
 
         public List<Message> GenerateMessage(string senderUserID, string recipientUserID, string textMessage)
@@ -36,13 +33,10 @@ namespace OnlineChatServer.Hubs.ChatHub.Services
             var sender = Users.FirstOrDefault(x => x.UserID == senderUserID);
             var nameSender = "Неизвестный пользователь";
             var date = DateTime.Now.ToString("dd.mm.yyyy HH:mm");
-            if(sender != null)
-            {
-                nameSender = sender.FullName;
-            }
+            if (sender != null) nameSender = sender.FullName;
             var allUserConnections = Users.Where(x => x.UserID == recipientUserID);
 
-            foreach(var connection in allUserConnections)
+            foreach (var connection in allUserConnections)
                 messages.Add(new Message
                 {
                     DispatchTime = date,
@@ -65,10 +59,7 @@ namespace OnlineChatServer.Hubs.ChatHub.Services
         {
             var user = Users.FirstOrDefault(x => x.UserID == userID);
 
-            if(user != null)
-            {
-                return user.ConnectionID;
-            }
+            if (user != null) return user.ConnectionID;
 
             return "";
         }
