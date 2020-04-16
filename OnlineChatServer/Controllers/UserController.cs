@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -7,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OnlineChatServer.Application.Users.Commands.RegisterUser;
 using OnlineChatServer.Application.Users.Queries.Login;
+using OnlineChatServer.DataAccess;
 using OnlineChatServer.Domain;
 using OnlineChatServer.Domain.Models;
 using OnlineChatServer.Models;
@@ -23,11 +26,13 @@ namespace OnlineChatServer.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _db;
 
         public UserController(ILogger<UserController> logger, UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings,
-            RoleManager<IdentityRole> roleManager, IMediator mediator)
+            RoleManager<IdentityRole> roleManager, IMediator mediator, ApplicationDbContext db)
         {
+            _db = db;
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
@@ -84,6 +89,24 @@ namespace OnlineChatServer.Controllers
             if (string.IsNullOrWhiteSpace(token)) return BadRequest("Error Login");
 
             return Ok(new { token });
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("GetAllUsersInfo")]
+        public List<ChatUser> GetAllUser()
+        {
+            var currentUserID = User.Claims.First(x => x.Type == "UserID").Value;
+            var result = _db.Users.Select(x => new ChatUser()
+            {
+                UserID = x.Id,
+                FullName = $"{x.FirstName} {x.LastName}",
+                ImagePath = x.ImagePath
+            }).ToList();
+
+          var currentUser = result.FirstOrDefault(x => x.UserID == currentUserID);
+          result.Remove(currentUser);
+          return result;
         }
     }
 }
