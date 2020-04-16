@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using OnlineChatServer.Application.Messages.Commands.AddMessage;
 using OnlineChatServer.DataAccess;
+using OnlineChatServer.Domain;
 using OnlineChatServer.Hubs.ChatHub.Services;
 
 namespace OnlineChatServer.Hubs.ChatHub
@@ -35,8 +37,18 @@ namespace OnlineChatServer.Hubs.ChatHub
         public async Task SendMessage(string recipientUserID, string textMessage)
         {
             var userID = Context.User.Claims.First(x => x.Type == "UserID").Value;
-            var messages = _service.GenerateMessage(userID, recipientUserID, textMessage);
-            foreach (var msg in messages) await Clients.Client(msg.RecipientConnectionID).SendAsync("NewMessage", msg);
+           
+            var message = _service.GenerateMessage(userID, recipientUserID, textMessage);
+            var connections = _service.GetAllUserConnections(recipientUserID);
+            foreach (var connection in connections) await Clients.Client(connection).SendAsync("NewMessage", message);
+            
+            await _mediator.Send(new AddMessageCommand()
+            {
+                RecipientID = recipientUserID,
+                SenderID = userID,
+                TextMessage = textMessage
+            });
+
         }
 
 

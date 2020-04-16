@@ -12,7 +12,7 @@ using OnlineChatServer.Domain;
 
 namespace OnlineChatServer.Application.Users.Queries.Login
 {
-    public class LoginHandler : IRequestHandler<LoginCommand, string>
+    public class LoginHandler : IRequestHandler<LoginQuery, string>
     {
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -22,7 +22,7 @@ namespace OnlineChatServer.Application.Users.Queries.Login
             _userManager = userManager;
         }
 
-        public async Task<string> Handle(LoginCommand request, CancellationToken cancellationToken)
+        public async Task<string> Handle(LoginQuery request, CancellationToken cancellationToken)
         {
             try
             {

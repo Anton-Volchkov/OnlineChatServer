@@ -10,8 +10,8 @@ using OnlineChatServer.DataAccess;
 namespace OnlineChatServer.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20200414163925_AddColumnImagePath")]
-    partial class AddColumnImagePath
+    [Migration("20200416091704_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -233,6 +233,35 @@ namespace OnlineChatServer.DataAccess.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
+            modelBuilder.Entity("OnlineChatServer.Domain.ChatMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("DispatchTime")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FullNameSender")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RecipientID")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SenderID")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TextMessage")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SenderID");
+
+                    b.ToTable("Messages");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -282,6 +311,13 @@ namespace OnlineChatServer.DataAccess.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("OnlineChatServer.Domain.ChatMessage", b =>
+                {
+                    b.HasOne("OnlineChatServer.Domain.ApplicationUser", "Sender")
+                        .WithMany("Messages")
+                        .HasForeignKey("SenderID");
                 });
 #pragma warning restore 612, 618
         }

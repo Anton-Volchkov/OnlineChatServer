@@ -6,6 +6,8 @@ namespace OnlineChatServer.DataAccess
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public DbSet<ChatMessage> Messages { get; set; }
+        
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
         }

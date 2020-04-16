@@ -27,27 +27,28 @@ namespace OnlineChatServer.Hubs.ChatHub.Services
             if (user != null) Users.Remove(user);
         }
 
-        public List<Message> GenerateMessage(string senderUserID, string recipientUserID, string textMessage)
+        public Message GenerateMessage(string senderUserID, string recipientUserID, string textMessage)
         {
-            var messages = new List<Message>();
+      
             var sender = Users.FirstOrDefault(x => x.UserID == senderUserID);
             var nameSender = "Неизвестный пользователь";
-            var date = DateTime.Now.ToString("dd.mm.yyyy HH:mm");
+            var date = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
+            
             if (sender != null) nameSender = sender.FullName;
-            var allUserConnections = Users.Where(x => x.UserID == recipientUserID);
 
-            foreach (var connection in allUserConnections)
-                messages.Add(new Message
+            return new Message
                 {
                     DispatchTime = date,
                     RecipientID = recipientUserID,
                     SenderID = senderUserID,
                     TextMessage = textMessage,
                     FullNameSender = nameSender,
-                    RecipientConnectionID = connection.ConnectionID
-                });
+                };;
+        }
 
-            return messages;
+        public List<string> GetAllUserConnections(string userID)
+        {
+            return Users.Where(x => x.UserID == userID).Select(x => x.ConnectionID).ToList();
         }
 
         public List<ChatUser> GetOnlineUsers()

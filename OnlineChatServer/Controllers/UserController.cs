@@ -75,7 +75,7 @@ namespace OnlineChatServer.Controllers
         [Route("Login")]
         public async Task<IActionResult> Login(LoginModel model)
         {
-            var token = await _mediator.Send(new LoginCommand
+            var token = await _mediator.Send(new LoginQuery
             {
                 Model = model,
                 JWTSecretKey = _appSettings.SecretJWTKey
