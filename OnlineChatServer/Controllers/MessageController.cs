@@ -5,7 +5,6 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OnlineChatServer.Application.Messages.Queries;
-using OnlineChatServer.Domain;
 using OnlineChatServer.Hubs.ChatHub.Models;
 
 namespace OnlineChatServer.Controllers
@@ -20,20 +19,20 @@ namespace OnlineChatServer.Controllers
         {
             _mediator = mediator;
         }
-        
+
         [HttpGet]
         [Authorize]
         [Route("GetChatHistory/{recipientID}")]
         public async Task<List<Message>> GetHistory(string recipientID)
         {
             var userID = User.Claims.First(x => x.Type == "UserID").Value;
-            var messages = await _mediator.Send(new GetMessagesQuery()
+            var messages = await _mediator.Send(new GetMessagesQuery
             {
                 RecipientID = recipientID,
                 SenderID = userID
             });
 
-            return messages.Select(x => new Message()
+            return messages.Select(x => new Message
             {
                 SenderID = x.SenderID,
                 RecipientID = x.RecipientID,
@@ -42,5 +41,5 @@ namespace OnlineChatServer.Controllers
                 FullNameSender = x.FullNameSender
             }).ToList();
         }
-}
+    }
 }

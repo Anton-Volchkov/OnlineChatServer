@@ -10,8 +10,8 @@ using OnlineChatServer.DataAccess;
 namespace OnlineChatServer.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20200416091704_Initial")]
-    partial class Initial
+    [Migration("20200419133321_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -250,6 +250,7 @@ namespace OnlineChatServer.DataAccess.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("SenderID")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("TextMessage")
@@ -317,7 +318,9 @@ namespace OnlineChatServer.DataAccess.Migrations
                 {
                     b.HasOne("OnlineChatServer.Domain.ApplicationUser", "Sender")
                         .WithMany("Messages")
-                        .HasForeignKey("SenderID");
+                        .HasForeignKey("SenderID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

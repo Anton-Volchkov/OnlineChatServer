@@ -21,12 +21,12 @@ namespace OnlineChatServer.Controllers
     public class UserController : ControllerBase
     {
         private readonly ApplicationSettings _appSettings;
+        private readonly ApplicationDbContext _db;
         private readonly ILogger<UserController> _logger;
         private readonly IMediator _mediator;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly ApplicationDbContext _db;
 
         public UserController(ILogger<UserController> logger, UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings,
@@ -97,16 +97,16 @@ namespace OnlineChatServer.Controllers
         public List<ChatUser> GetAllUser()
         {
             var currentUserID = User.Claims.First(x => x.Type == "UserID").Value;
-            var result = _db.Users.Select(x => new ChatUser()
+            var result = _db.Users.Select(x => new ChatUser
             {
                 UserID = x.Id,
                 FullName = $"{x.FirstName} {x.LastName}",
                 ImagePath = x.ImagePath
             }).ToList();
 
-          var currentUser = result.FirstOrDefault(x => x.UserID == currentUserID);
-          result.Remove(currentUser);
-          return result;
+            var currentUser = result.FirstOrDefault(x => x.UserID == currentUserID);
+            result.Remove(currentUser);
+            return result;
         }
     }
 }

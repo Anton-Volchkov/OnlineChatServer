@@ -33,6 +33,7 @@ namespace OnlineChatServer.Domain
         public string AboutAs { get; set; }
 
         public ICollection<ChatMessage> Messages { get; set; }
+
         public void SetAboutAs(string info)
         {
             if (string.IsNullOrWhiteSpace(info)) throw new ArgumentException("Inbfo about as is empty", nameof(info));

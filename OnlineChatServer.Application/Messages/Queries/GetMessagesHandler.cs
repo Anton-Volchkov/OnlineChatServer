@@ -10,11 +10,13 @@ namespace OnlineChatServer.Application.Messages.Queries
 {
     public class GetMessagesHandler : IRequestHandler<GetMessagesQuery, List<ChatMessage>>
     {
-        private readonly ApplicationDbContext _db;    
+        private readonly ApplicationDbContext _db;
+
         public GetMessagesHandler(ApplicationDbContext db)
         {
             _db = db;
         }
+
         public Task<List<ChatMessage>> Handle(GetMessagesQuery request, CancellationToken cancellationToken)
         {
             return Task.FromResult(_db.Messages

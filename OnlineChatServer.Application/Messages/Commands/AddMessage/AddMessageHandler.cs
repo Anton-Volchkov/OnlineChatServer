@@ -33,11 +33,11 @@ namespace OnlineChatServer.Application.Messages.Commands.AddMessage
                 SenderID = request.SenderID,
                 TextMessage = request.TextMessage
             };
-            
+
             _db.Messages.Add(msg);
-           
+
             await _db.SaveChangesAsync(cancellationToken);
-            
+
             return Unit.Value;
         }
     }

@@ -29,21 +29,21 @@ namespace OnlineChatServer.Hubs.ChatHub.Services
 
         public Message GenerateMessage(string senderUserID, string recipientUserID, string textMessage)
         {
-      
             var sender = Users.FirstOrDefault(x => x.UserID == senderUserID);
             var nameSender = "Неизвестный пользователь";
             var date = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
-            
+
             if (sender != null) nameSender = sender.FullName;
 
             return new Message
-                {
-                    DispatchTime = date,
-                    RecipientID = recipientUserID,
-                    SenderID = senderUserID,
-                    TextMessage = textMessage,
-                    FullNameSender = nameSender,
-                };;
+            {
+                DispatchTime = date,
+                RecipientID = recipientUserID,
+                SenderID = senderUserID,
+                TextMessage = textMessage,
+                FullNameSender = nameSender
+            };
+            ;
         }
 
         public List<string> GetAllUserConnections(string userID)
