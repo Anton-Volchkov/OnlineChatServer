@@ -5,5 +5,6 @@ namespace OnlineChatServer.Domain.Models
         public string UserID { get; set; }
         public string ImagePath { get; set; }
         public string FullName { get; set; }
+        public bool HaveUnreadDialog { get; set; }
     }
 }

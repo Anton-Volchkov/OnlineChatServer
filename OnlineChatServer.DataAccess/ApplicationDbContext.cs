@@ -11,6 +11,7 @@ namespace OnlineChatServer.DataAccess
         }
 
         public DbSet<ChatMessage> Messages { get; set; }
+        public DbSet<UnreadDialog> UnreadDialogs { get; set; }
 
         //Нужно для Identity
         protected override void OnModelCreating(ModelBuilder builder)

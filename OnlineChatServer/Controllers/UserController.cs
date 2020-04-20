@@ -101,11 +101,24 @@ namespace OnlineChatServer.Controllers
             {
                 UserID = x.Id,
                 FullName = $"{x.FirstName} {x.LastName}",
-                ImagePath = x.ImagePath
+                ImagePath = x.ImagePath,
+                HaveUnreadDialog = false
             }).ToList();
 
             var currentUser = result.FirstOrDefault(x => x.UserID == currentUserID);
             result.Remove(currentUser);
+            
+            foreach (var user in result)
+            {
+                var unreadDialog =
+                    _db.UnreadDialogs.FirstOrDefault(x => x.SenderID == user.UserID && x.UserID == currentUserID);
+
+                if (unreadDialog != null)
+                {
+                    user.HaveUnreadDialog = true;
+                }
+            }
+            
             return result;
         }
     }
