@@ -6,6 +6,19 @@ namespace OnlineChatServer.Domain
 {
     public class ApplicationUser : IdentityUser
     {
+        public string FirstName { get; private set; }
+        public string LastName { get; private set; }
+
+        public string Address { get; private set; }
+
+        public string RegisterDate { get; set; }
+
+        public string ImagePath { get; set; }
+
+        public string AboutAs { get; set; }
+
+        public ICollection<ChatMessage> Messages { get; set; }
+
         public ApplicationUser()
         {
             RegisterDate = DateTime.Now.ToString("G");
@@ -20,19 +33,6 @@ namespace OnlineChatServer.Domain
             SetEmail(email);
             SetImagePath(imagePath);
         }
-
-        public string FirstName { get; private set; }
-        public string LastName { get; private set; }
-
-        public string Address { get; private set; }
-
-        public string RegisterDate { get; set; }
-
-        public string ImagePath { get; set; }
-
-        public string AboutAs { get; set; }
-
-        public ICollection<ChatMessage> Messages { get; set; }
 
         public void SetAboutAs(string info)
         {

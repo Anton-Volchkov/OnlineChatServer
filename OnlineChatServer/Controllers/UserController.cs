@@ -107,18 +107,15 @@ namespace OnlineChatServer.Controllers
 
             var currentUser = result.FirstOrDefault(x => x.UserID == currentUserID);
             result.Remove(currentUser);
-            
+
             foreach (var user in result)
             {
                 var unreadDialog =
                     _db.UnreadDialogs.FirstOrDefault(x => x.SenderID == user.UserID && x.UserID == currentUserID);
 
-                if (unreadDialog != null)
-                {
-                    user.HaveUnreadDialog = true;
-                }
+                if (unreadDialog != null) user.HaveUnreadDialog = true;
             }
-            
+
             return result;
         }
     }

@@ -38,12 +38,10 @@ namespace OnlineChatServer.Hubs.ChatHub
                 var unreadDialog =
                     _db.UnreadDialogs.FirstOrDefault(x => x.SenderID == onlineUser.UserID && x.UserID == userID);
 
-                if (unreadDialog != null)
-                {
-                    onlineUser.HaveUnreadDialog = true;
-                }
+                if (unreadDialog != null) onlineUser.HaveUnreadDialog = true;
             }
-            await Clients.All.SendAsync("OnlineUsers", onlineUsers );
+
+            await Clients.All.SendAsync("OnlineUsers", onlineUsers);
         }
 
 
@@ -53,7 +51,7 @@ namespace OnlineChatServer.Hubs.ChatHub
 
             var message = _service.GenerateMessage(userID, recipientUserID, textMessage);
             var connections = _service.GetAllUserConnections(recipientUserID);
-            
+
             if (_db.UnreadDialogs.FirstOrDefault(x => x.SenderID == userID && x.UserID == recipientUserID) == null)
             {
                 await _db.UnreadDialogs.AddAsync(new UnreadDialog
@@ -61,17 +59,17 @@ namespace OnlineChatServer.Hubs.ChatHub
                     SenderID = userID,
                     UserID = recipientUserID
                 });
-                
+
                 await _db.SaveChangesAsync();
             }
-          
+
             await _mediator.Send(new AddMessageCommand
             {
                 RecipientID = recipientUserID,
                 SenderID = userID,
                 TextMessage = textMessage
             });
-            
+
             foreach (var connection in connections) await Clients.Client(connection).SendAsync("NewMessage", message);
         }
 
@@ -84,8 +82,8 @@ namespace OnlineChatServer.Hubs.ChatHub
                 _db.UnreadDialogs.Remove(dialog);
                 await _db.SaveChangesAsync();
             }
-           
         }
+
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             var userID = Context.User.Claims.First(x => x.Type == "UserID").Value;

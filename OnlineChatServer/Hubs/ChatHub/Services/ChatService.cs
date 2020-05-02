@@ -43,7 +43,6 @@ namespace OnlineChatServer.Hubs.ChatHub.Services
                 TextMessage = textMessage,
                 FullNameSender = nameSender
             };
-            
         }
 
         public List<string> GetAllUserConnections(string userID)

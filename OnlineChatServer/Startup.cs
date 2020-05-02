@@ -24,6 +24,8 @@ namespace OnlineChatServer
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+
         public Startup(IWebHostEnvironment env)
         {
             var culture = new CultureInfo("ru-RU");
@@ -39,8 +41,6 @@ namespace OnlineChatServer
 
             Configuration = builder.Build();
         }
-
-        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)

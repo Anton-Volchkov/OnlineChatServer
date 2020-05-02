@@ -8,11 +8,12 @@ namespace OnlineChatServer.DataAccess.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "UnreadDialogs",
-                columns: table => new
+                "UnreadDialogs",
+                table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("Npgsql:ValueGenerationStrategy",
+                            NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     SenderID = table.Column<string>(nullable: false),
                     UserID = table.Column<string>(nullable: false)
                 },
@@ -20,23 +21,23 @@ namespace OnlineChatServer.DataAccess.Migrations
                 {
                     table.PrimaryKey("PK_UnreadDialogs", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UnreadDialogs_AspNetUsers_UserID",
-                        column: x => x.UserID,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
+                        "FK_UnreadDialogs_AspNetUsers_UserID",
+                        x => x.UserID,
+                        "AspNetUsers",
+                        "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_UnreadDialogs_UserID",
-                table: "UnreadDialogs",
-                column: "UserID");
+                "IX_UnreadDialogs_UserID",
+                "UnreadDialogs",
+                "UserID");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "UnreadDialogs");
+                "UnreadDialogs");
         }
     }
 }
