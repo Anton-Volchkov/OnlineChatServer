@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.SignalR;
 using OnlineChatServer.Application.Messages.Commands.AddMessage;
 using OnlineChatServer.DataAccess;
 using OnlineChatServer.Domain;
+using OnlineChatServer.Domain.Entities;
+using OnlineChatServer.Domain.Models;
 using OnlineChatServer.Hubs.ChatHub.Services;
 
 namespace OnlineChatServer.Hubs.ChatHub
@@ -32,14 +34,6 @@ namespace OnlineChatServer.Hubs.ChatHub
             _service.Connect(userID, Context.ConnectionId, fullName, user.ImagePath);
 
             var onlineUsers = _service.GetOnlineUsers();
-
-            foreach (var onlineUser in onlineUsers)
-            {
-                var unreadDialog =
-                    _db.UnreadDialogs.FirstOrDefault(x => x.SenderID == onlineUser.UserID && x.UserID == userID);
-
-                if (unreadDialog != null) onlineUser.HaveUnreadDialog = true;
-            }
 
             await Clients.All.SendAsync("OnlineUsers", onlineUsers);
         }
@@ -89,6 +83,51 @@ namespace OnlineChatServer.Hubs.ChatHub
             var userID = Context.User.Claims.First(x => x.Type == "UserID").Value;
             _service.Disconnect(userID, Context.ConnectionId);
             await Clients.All.SendAsync("OnlineUsers", _service.GetOnlineUsers());
+        }
+
+        public async Task BlockUser(string blockUserId)
+        {
+            var userID = Context.User.Claims.First(x => x.Type == "UserID").Value;
+
+            if(_db.BlackList.Any(x => x.UserId == userID && x.BlockUserId == blockUserId))
+            {
+                return;
+            }
+
+            await _db.BlackList.AddAsync(new BlackList()
+            {
+                BlockUserId = blockUserId,
+                UserId =  userID
+            });
+          
+            await _db.SaveChangesAsync();
+
+            await Clients.All.SendAsync("BlockUser", new BlackListDataModel()
+            { 
+                BlockUserId = blockUserId,
+                UserId =  userID
+            });
+
+        }
+
+        public async Task UnblockUser(string unblockUserId)
+        {
+            var userID = Context.User.Claims.First(x => x.Type == "UserID").Value;
+
+
+            var unblockUsers = _db.BlackList.Where(x => x.UserId == userID && x.BlockUserId == unblockUserId);
+
+           
+            _db.BlackList.RemoveRange(unblockUsers);
+            
+            await _db.SaveChangesAsync();
+
+            await Clients.All.SendAsync("UnblockUser", new BlackListDataModel()
+            {
+                BlockUserId = unblockUserId,
+                UserId = userID
+            });
+
         }
     }
 }

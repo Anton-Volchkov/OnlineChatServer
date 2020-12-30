@@ -19,6 +19,13 @@ namespace OnlineChatServer.Application.Messages.Queries
 
         public Task<List<ChatMessage>> Handle(GetMessagesQuery request, CancellationToken cancellationToken)
         {
+            var unreadDialog =
+                _db.UnreadDialogs.FirstOrDefault(x => x.SenderID == request.RecipientID && x.UserID == request.SenderID);
+
+            if(unreadDialog != null)
+            {
+                _db.UnreadDialogs.RemoveRange(unreadDialog);
+            }
             return Task.FromResult(_db.Messages
                 .Where(x => x.SenderID == request.SenderID && x.RecipientID == request.RecipientID ||
                             x.SenderID == request.RecipientID && x.RecipientID == request.SenderID)

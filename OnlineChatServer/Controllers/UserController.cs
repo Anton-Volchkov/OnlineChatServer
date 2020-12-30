@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OnlineChatServer.Application.Users.Commands.RegisterUser;
@@ -62,6 +64,51 @@ namespace OnlineChatServer.Controllers
             };
         }
 
+        [HttpGet]
+        [Authorize]
+        [Route("GetChatUserInfo/{userID}")]
+        public async Task<object> GetChatUserInfo(string userID)
+        {
+            var currentUserID = User.Claims.First(x => x.Type == "UserID").Value;
+
+            var user = await _db.Users.FirstOrDefaultAsync(x => x.Id == userID);
+
+            if(user is null)
+            {
+                throw new Exception("Пользователь не найден!");
+            }
+
+            var chatUser = new ChatUser
+            {
+                UserID = user.Id,
+                FullName = $"{user.FirstName} {user.LastName}",
+                ImagePath = user.ImagePath,
+                HaveUnreadDialog = false
+            };
+
+            var unreadDialog =
+                _db.UnreadDialogs.FirstOrDefault(x => x.SenderID == user.Id && x.UserID == currentUserID);
+
+            var blackList =
+                _db.BlackList.FirstOrDefault(x => x.BlockUserId == user.Id && x.UserId == currentUserID || x.BlockUserId == currentUserID && x.UserId == user.Id);
+
+            var isBlocked = _db.BlackList.FirstOrDefault(x => x.BlockUserId == user.Id && x.UserId == currentUserID);
+
+            if (unreadDialog != null) chatUser.HaveUnreadDialog = true;
+
+            if (blackList == null)
+            {
+                chatUser.CanWriteMessage = true;
+            }
+
+            if(isBlocked != null)
+            {
+                chatUser.IsBlocked = true;
+            }
+
+            return Ok(chatUser);
+        }
+
 
         [HttpPost]
         [Route("Register")]
@@ -113,7 +160,19 @@ namespace OnlineChatServer.Controllers
                 var unreadDialog =
                     _db.UnreadDialogs.FirstOrDefault(x => x.SenderID == user.UserID && x.UserID == currentUserID);
 
+                var blackList =
+                    _db.BlackList.FirstOrDefault(x => x.BlockUserId == user.UserID && x.UserId == currentUserID || x.BlockUserId == currentUserID && x.UserId == user.UserID);
+
                 if (unreadDialog != null) user.HaveUnreadDialog = true;
+
+
+                var isBlocked = _db.BlackList.FirstOrDefault(x => x.BlockUserId == user.UserID && x.UserId == currentUserID);
+
+
+                if (isBlocked != null)
+                {
+                    user.IsBlocked = true;
+                }
             }
 
             return result;
