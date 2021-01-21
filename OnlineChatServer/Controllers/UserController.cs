@@ -165,6 +165,10 @@ namespace OnlineChatServer.Controllers
 
                 if (unreadDialog != null) user.HaveUnreadDialog = true;
 
+                if (blackList == null)
+                {
+                    user.CanWriteMessage = true;
+                }
 
                 var isBlocked = _db.BlackList.FirstOrDefault(x => x.BlockUserId == user.UserID && x.UserId == currentUserID);
 
