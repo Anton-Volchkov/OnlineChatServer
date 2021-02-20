@@ -8,7 +8,7 @@ using OnlineChatServer.Domain;
 
 namespace OnlineChatServer.Application.Messages.Commands.AddMessage
 {
-    public class AddMessageHandler : IRequestHandler<AddMessageCommand, Unit>
+    public class AddMessageHandler : IRequestHandler<AddMessageCommand, int>
     {
         private readonly ApplicationDbContext _db;
 
@@ -17,13 +17,13 @@ namespace OnlineChatServer.Application.Messages.Commands.AddMessage
             _db = db;
         }
 
-        public async Task<Unit> Handle(AddMessageCommand request, CancellationToken cancellationToken)
+        public async Task<int> Handle(AddMessageCommand request, CancellationToken cancellationToken)
         {
-            var sender = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.SenderID);
+            var sender = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.SenderID, cancellationToken: cancellationToken);
 
-            var recipient = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.RecipientID);
+            var recipient = await _db.Users.FirstOrDefaultAsync(x => x.Id == request.RecipientID, cancellationToken: cancellationToken);
 
-            if (recipient == null || sender == null) return Unit.Value;
+            if (recipient == null || sender == null) return 0;
 
             var msg = new ChatMessage
             {
@@ -34,11 +34,11 @@ namespace OnlineChatServer.Application.Messages.Commands.AddMessage
                 TextMessage = request.TextMessage
             };
 
-            _db.Messages.Add(msg);
+            await _db.Messages.AddAsync(msg, cancellationToken);
 
             await _db.SaveChangesAsync(cancellationToken);
 
-            return Unit.Value;
+            return msg.Id;
         }
     }
 }

@@ -34,6 +34,7 @@ namespace OnlineChatServer.Controllers
 
             return messages.Select(x => new Message
             {
+                Id =  x.Id,
                 SenderID = x.SenderID,
                 RecipientID = x.RecipientID,
                 TextMessage = x.TextMessage,

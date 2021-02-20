@@ -38,6 +38,21 @@ namespace OnlineChatServer.Hubs.ChatHub
             await Clients.All.SendAsync("OnlineUsers", onlineUsers);
         }
 
+        public async Task RemoveMessage(int msgId)
+        {
+            var msg = _db.Messages.FirstOrDefault(x => x.Id == msgId);
+
+            if(msg == null)
+            {
+                return;
+            }
+
+            _db.Messages.Remove(msg);
+
+            await _db.SaveChangesAsync();
+
+            await Clients.All.SendAsync("MessageDeleted", msgId);
+        }
 
         public async Task SendMessage(string recipientUserID, string textMessage)
         {
@@ -45,6 +60,7 @@ namespace OnlineChatServer.Hubs.ChatHub
 
             var message = _service.GenerateMessage(userID, recipientUserID, textMessage);
             var connections = _service.GetAllUserConnections(recipientUserID);
+            connections.AddRange(_service.GetAllUserConnections(userID));
 
             if (_db.UnreadDialogs.FirstOrDefault(x => x.SenderID == userID && x.UserID == recipientUserID) == null)
             {
@@ -57,13 +73,14 @@ namespace OnlineChatServer.Hubs.ChatHub
                 await _db.SaveChangesAsync();
             }
 
-            await _mediator.Send(new AddMessageCommand
+            var msgId = await _mediator.Send(new AddMessageCommand
             {
                 RecipientID = recipientUserID,
                 SenderID = userID,
                 TextMessage = textMessage
             });
 
+           message.Id = msgId;
             foreach (var connection in connections) await Clients.Client(connection).SendAsync("NewMessage", message);
         }
 

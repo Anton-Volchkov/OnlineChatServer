@@ -2,6 +2,7 @@
 {
     public class Message
     {
+        public int Id { get; set; }
         public string RecipientID { get; set; }
         public string SenderID { get; set; }
         public string FullNameSender { get; set; }
